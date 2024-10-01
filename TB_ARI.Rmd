@@ -1,0 +1,64 @@
+---
+title: ''
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#model inputs
+
+
+
+model.run <- function(num.yrs,pop.t0, ari,old.inf.prop, inf.prev.t0, death.rt, tb.death.rt, self.cure.rt ){
+  
+#1. empty data frame to store results of model 
+results1 <- data.frame(matrix(0, ncol=24, nrow=num.yrs)) 
+colnames(results1) <- c('year','pop.at.risk','inf.new','inf.1yr','inf.2yr','inf.3yr','inf.4yr','inf.5yr','inf.old','uninfected','progress2dis','all.disease','tx.cure','prev.dis.death','self.cure','inf.deaths','uninf.deaths','inc','total.inf','prop.inf','prop.uninf','inf.change','total.pop','dis.inc')
+
+results1$year <- as.integer(seq(1,num.yrs,1))
+
+#2. specify starting population for first year of model 
+results1[1,2] = pop.t0
+
+##########################
+### LOOP FOR EACH YEAR ###    
+##########################
+  for(i in 1:nrow(results1)){
+    
+    
+  #specify starting population & infections for first year 
+    if(i==1){
+      
+      #3. total infected is population*starting infection prevalence 
+      results1[i,19] = results1[i,2]*inf.prev.t0
+      
+      #4. new infections, equivalent of ARI*population 
+      results1[i,3] = results1[i,19]*ari
+      
+      #5. of existing infections, old.inf.prop proportion are old 
+      results1[i,9] = (results1[i,19] - results1[i,3])*old.inf.prop 
+    
+      #6. other infection groups are an equal distribution that add up to 63.4% infected with              old/new infections
+      results1[i,4:8] = (results1[i,19] - results1[i,9] - results1[i,3])/5 
+      
+      #7. everyone without an infection considered uninfected 
+      results1[i,10] = results1[i,2]-sum(results1[i,3:9]) 
+    }
+    
+    
+  }
+
+
+#return results
+return(results1)
+  
+}
+
+
+model.run(num.yrs = 10, pop.t0 = 1000000, inf.prev.t0 = .5, ari=.05, old.inf.prop=.4)
+
+
+```
